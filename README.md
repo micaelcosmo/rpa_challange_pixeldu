@@ -67,7 +67,7 @@ Navigate to the project directory and create a Conda environment using the provi
 
 ```bash
 cd rpa_challenge_pixeldu
-conda env create -f conda.yaml
+conda env create -n rpa_challenge_env -f conda.yaml
 ```
 
 This will create a virtual environment named `rpa_challenge_env` with all the necessary dependencies.
