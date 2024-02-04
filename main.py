@@ -1,18 +1,25 @@
-import dotenv
+from logger import AppLogger
 from engine.web_scraping import WebScraping
-
-
-ENV = dotenv.find_dotenv('.env')
-if ENV:
-    dotenv.load_dotenv(ENV)
-
 
 # URL of the news website
 NEWS_URL= "https://apnews.com/"
+SCREENSHOT_NAME = "apnews.png"
+EXCEL_NAME = "apnews.xlsx"
+SEARCH_WORLD = "money"
+MAX_ELEMENTS_TO_PROCESS = 5 
 
-def main():
-    WebScraping(url=NEWS_URL)
+logger = AppLogger().logger
+
+def minimal_task():
+    logger.info("Starting minimal task")
+    WebScraping(
+        url=NEWS_URL, 
+        search=SEARCH_WORLD, 
+        filename_excel=EXCEL_NAME, 
+        filename_screenshot=SCREENSHOT_NAME, 
+        max_elements=MAX_ELEMENTS_TO_PROCESS)
+    logger.info("Ending minimal task")
 
 
 if __name__ == "__main__":
-    main()
+    minimal_task()
