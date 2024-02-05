@@ -1,6 +1,10 @@
 import logging
 
 class AppLogger:
+    """
+    Singleton class for creating and accessing a logger instance.
+    """
+
     _instance = None
 
     def __new__(cls, *args, **kwargs):
@@ -18,4 +22,10 @@ class AppLogger:
             self.logger.setLevel(logging.DEBUG)
 
     def get_logger(self):
+        """
+        Returns the logger instance.
+
+        Returns:
+            logging.Logger: The logger instance.
+        """
         return self.logger
