@@ -7,5 +7,6 @@ dependencies:
     - robotframework-browser==17.2.0
     - rpaframework==24.1.2
     - pandas==2.2.0
+    - nltk==3.8.1
 rccPostInstall:
   - rfbrowser init
