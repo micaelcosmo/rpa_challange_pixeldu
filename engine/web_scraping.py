@@ -84,8 +84,6 @@ class WebScraping:
             self.logger.info(f"Processing page {i+1}")
             if self.search_for_pagination():
                 self.logger.info("This search has pagination")
-                if self.store_news() == False:
-                    break
                 self.next_page()
             else:
                 self.logger.info("This search does not have pagination")
@@ -142,9 +140,8 @@ class WebScraping:
             may_continue = False
             months_range = self.months_range if self.months_range != 0 and self.months_range != 1 else 1
             may_continue = self.verify_month(date, months_range)
-            if may_continue == False:
-                return may_continue
-            self.list_news.append(news)
+            if may_continue == True:
+                self.list_news.append(news)
         return True
 
     def verify_month(self, date, months_range):
