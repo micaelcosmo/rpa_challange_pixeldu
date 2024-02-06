@@ -8,7 +8,7 @@ EXCEL_NAME = "apnews.xlsx"      # Excel file name
 SEARCH_WORLD = "money"          # Search term
 MAX_ELEMENTS_TO_PROCESS = -1    # Max elements to process | -1 to process all
 MAX_PAGES_TO_PROCESS = -1       # Max pages to process | -1 to process all
-MONTHS_RANGE = 3                # Months reach to filter by date
+MONTHS_RANGE = 3                # Months reach to filter by date | 0 or 1 to process only current month
 
 logger = AppLogger().logger
 
