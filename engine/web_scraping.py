@@ -1,13 +1,16 @@
 import re
+import datetime
+from dateutil import parser
 from logger import AppLogger
 from dataclasses import dataclass
+from dateutil.parser import ParserError
 from engine.base_access import URLAccess
 
+import nltk
 import pandas as pd
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import nltk
 
 
 nltk.download('punkt')
@@ -48,15 +51,15 @@ class WebScraping:
     Methods:
         _run(): Runs the web scraping process.
         store_news(): Stores the scraped news.
-        is_a_finance_news(text): Checks if the given text is related to finance news.
-        save_picture_to_file(filename, picture): Saves the picture to a file.
+        _is_a_finance_news(text): Checks if the given text is related to finance news.
+        _save_picture_to_file(filename, picture): Saves the picture to a file.
         to_snake_case(content_text): Converts the given text to snake case.
         search(): Performs the search operation.
         news_to_excel(): Saves the scraped news to an Excel file.
         search_for_pagination(): Checks if the search has pagination.
         next_page(): Moves to the next page.
     """
-    def __init__(self, url:str='', search:str='', filename_excel:str='', filename_screenshot:str='', max_elements_by_page:int=-1, max_pages:int=1):
+    def __init__(self, url:str='', search:str='', filename_excel:str='', filename_screenshot:str='', max_elements_by_page:int=-1, max_pages:int=1, months_range:int=1):
         try:
             self.access = URLAccess(url=url, filename_screenshot=filename_screenshot)
             self.logger = AppLogger().logger
@@ -64,6 +67,7 @@ class WebScraping:
             self.filename_excel = filename_excel
             self.max_elements = max_elements_by_page
             self.max_pages = 9999999 if max_pages == -1 else max_pages
+            self.months_range = months_range
             self.driver = self.access.driver_browser
             self.list_news = []
             self._run()
@@ -80,11 +84,12 @@ class WebScraping:
             self.logger.info(f"Processing page {i+1}")
             if self.search_for_pagination():
                 self.logger.info("This search has pagination")
-                self.store_news()
+                if self.store_news() == False:
+                    break
                 self.next_page()
             else:
                 self.logger.info("This search does not have pagination")
-                self.store_news()
+                _ = self.store_news()
                 break
         self.news_to_excel()
         self.logger.info("Web scraping process finished")
@@ -118,9 +123,11 @@ class WebScraping:
                 date = element.find_element(By.CLASS_NAME, "PagePromo-date").text
             except:
                 date = 'No date found'
+                self.logger.warning(f"Date not found for news {title}, skipping")
+                continue
             try:
                 picture = element.find_element(By.CLASS_NAME, "Image")
-                picture_filename = self.save_picture_to_file(element.text.split(' ')[0]+'.png', picture)
+                picture_filename = self._save_picture_to_file(element.text.split(' ')[0]+'.png', picture)
             except:
                 picture_filename = 'No picture found'
 
@@ -130,11 +137,26 @@ class WebScraping:
                 description=description, 
                 picture=picture_filename, 
                 number_of_prhases=number_of_prhases, 
-                is_financial=self.is_a_finance_news(description)
+                is_financial=self._is_a_finance_news(description)
                 )
+            may_continue = False
+            months_range = self.months_range if self.months_range != 0 and self.months_range != 1 else 1
+            may_continue = self.verify_month(date, months_range)
+            if may_continue == False:
+                return may_continue
             self.list_news.append(news)
+        return True
 
-    def is_a_finance_news(self, text):
+    def verify_month(self, date, months_range):
+        for month in range(months_range):
+            if self._is_equal_current_month(date, month) == True:
+                may_continue = True
+                break
+            else:
+                may_continue = False
+        return may_continue
+
+    def _is_a_finance_news(self, text):
         """
         Checks if the given text is related to finance news.
 
@@ -148,7 +170,7 @@ class WebScraping:
         pattern = re.compile(fr'\b({"|".join(map(re.escape, currency_symbols))})?\s?\d+(\d+)?\b')
         return bool(pattern.search(text))
     
-    def save_picture_to_file(self, filename, picture):
+    def _save_picture_to_file(self, filename, picture):
         """
         Saves the picture to a file.
 
@@ -221,3 +243,46 @@ class WebScraping:
             next_page_link.click()
         except Exception as e:
             self.logger.error(f"Error clicking next page: {e}, maybe it does not work for this page")
+
+    @staticmethod
+    def _subtract_month(date, months):
+        """
+        Subtract the specified number of months from the given date.
+
+        Args:
+            date (datetime.date): The date to subtract months from.
+            months (int): The number of months to subtract.
+
+        Returns:
+            datetime.date: The resulting date after subtracting the months.
+        """
+        month = date.month - months
+        year = date.year
+        if month <= 0:
+            year -= 1
+            month += 12
+        return date.replace(year=year, month=month)
+
+    def _is_equal_current_month(self, date_str, months_range=1):
+        """
+        Checks if the given date is less than or equal to the current month.
+
+        Args:
+            date_str (str): The date string to compare.
+
+        Returns:
+            bool: True if the given date is less than or equal to the current month, False otherwise.
+        """
+        current_date = datetime.datetime.now()
+        if months_range > 0:
+            current_date = self._subtract_month(current_date, months_range)
+        try:
+            given_date = parser.parse(date_str, fuzzy_with_tokens=True)[0]
+        except ParserError:
+            self.logger.warning(f"Invalid date format: {date_str}")
+            self.logger.warning(f"Skipping date comparison")
+            return True
+        result = given_date.month == current_date.month and given_date.year == current_date.year
+        if result == False:
+            self.logger.info(f"News date {date_str} is not in the current month'{current_date}'")
+        return result
