@@ -8,5 +8,4 @@ dependencies:
     - rpaframework==24.1.2
     - pandas==2.2.0
     - nltk==3.8.1
-rccPostInstall:
-  - rfbrowser init
+    - robocorp==1.5.0 # https://pypi.org/project/robocorp
