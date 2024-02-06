@@ -161,4 +161,8 @@ cython_debug/
 
 **.png
 **.xlsx
+**.html
+**.xml
 *.vscode/
+output
+.use
