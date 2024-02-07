@@ -9,3 +9,5 @@ dependencies:
     - pandas==2.2.0
     - nltk==3.8.1
     - robocorp==1.5.0 # https://pypi.org/project/robocorp
+    - datautil==0.1.0
+    - loggings==0.1.0

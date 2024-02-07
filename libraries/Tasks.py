@@ -1,4 +1,4 @@
-from logger import AppLogger
+from AppLogger import AppLogger
 from engine.WebScraping import WebScraping
 from robocorp.tasks import task
 

@@ -1,5 +1,11 @@
 *** Settings ***
-Library           Tasks
+Documentation       Working with search news.
+
+Library             Tasks.py
+Library             RPA.Browser.Selenium
+
+Task Teardown       Close All Browsers
+
 
 *** Tasks ***
 Using Tasks with Pure Selenium

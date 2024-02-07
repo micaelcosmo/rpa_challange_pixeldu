@@ -1,4 +1,4 @@
-from Tasks import Tasks
+from libraries.Tasks import Tasks
 
 def main():
     # Create an instance of the Tasks class
